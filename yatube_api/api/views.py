@@ -10,15 +10,10 @@ from .permissions import OwnerOrReadOnly
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [OwnerOrReadOnly, IsAuthenticated]
+    permission_classes = (OwnerOrReadOnly, IsAuthenticated)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def get_permissions(self):
-        if self.action == 'list':
-            return (IsAuthenticated(),)
-        return super().get_permissions()
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -28,20 +23,15 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [OwnerOrReadOnly, IsAuthenticated]
+    permission_classes = (OwnerOrReadOnly, IsAuthenticated)
 
     def get_queryset(self):
-        post_id = self.kwargs.get('pk3')
+        post_id = self.kwargs.get('post_id')
         post = get_object_or_404(Post, id=post_id)
         new_queryset = Comment.objects.filter(post=post)
         return new_queryset
 
     def perform_create(self, serializer):
-        post_id = self.kwargs.get('pk3')
+        post_id = self.kwargs.get('post_id')
         post = get_object_or_404(Post, id=post_id)
         serializer.save(author=self.request.user, post=post)
-
-    def get_permissions(self):
-        if self.action == 'retrieve':
-            return (IsAuthenticated(),)
-        return super().get_permissions()
